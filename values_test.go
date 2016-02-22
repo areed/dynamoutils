@@ -73,6 +73,37 @@ func TestTime(t *testing.T) {
 		t.Fatal(err)
 	}
 	if !now.Equal(when) {
-		t.Error("retreived time does not equal stored time")
+		t.Error("retrieved time does not equal stored time")
+	}
+}
+
+func TestDuration(t *testing.T) {
+	key := &dynamodb.AttributeValue{S: aws.String("test_duration")}
+	duration := 365 * 24 * time.Hour + time.Nanosecond
+	_, err := client.PutItem(&dynamodb.PutItemInput{
+		TableName: table,
+		Item: map[string]*dynamodb.AttributeValue{
+			"test_id": key,
+			"test_value": FormatDuration(duration),
+		},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	resp, err := client.GetItem(&dynamodb.GetItemInput{
+		TableName: table,
+		Key: map[string]*dynamodb.AttributeValue{
+			"test_id": key,
+		},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	parsed, err := ParseDuration(resp.Item["test_value"])
+	if err != nil {
+		t.Fatal(err)
+	}
+	if duration != parsed {
+		t.Error("retrieved duration does not equal stored duration")
 	}
 }

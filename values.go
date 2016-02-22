@@ -37,3 +37,16 @@ func ParseTime(v *dynamodb.AttributeValue) (time.Time, error) {
 	}
 	return time.Unix(0, nanoseconds), nil
 }
+
+//FormatDuration converts a time.Duration to an *AttributeValue number.
+func FormatDuration(d time.Duration) *dynamodb.AttributeValue {
+	return &dynamodb.AttributeValue{N: aws.String(strconv.FormatInt(int64(d), 10))}
+}
+
+func ParseDuration(v *dynamodb.AttributeValue) (time.Duration, error) {
+	i, err := strconv.ParseInt(*v.N, 10, 64)
+	if err != nil {
+		return 0, err
+	}
+	return time.Duration(i), nil
+}
