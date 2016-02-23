@@ -1,6 +1,7 @@
 package dynamoutils
 
 import (
+	"strconv"
 	"testing"
 	"time"
 
@@ -42,6 +43,39 @@ func TestString(t *testing.T) {
 		}
 		if v != ParseString(resp.Item["test_value"]) {
 			t.Errorf("%q -> %q", v, *resp.Item["test_value"].S)
+		}
+	}
+}
+
+func TestInt(t *testing.T) {
+	cases := []int{-2, 0, 38}
+	for _, v := range cases {
+		key := &dynamodb.AttributeValue{S: aws.String("test_int_" + strconv.FormatInt(int64(v), 10))}
+		_, err := client.PutItem(&dynamodb.PutItemInput{
+			TableName: table,
+			Item: map[string]*dynamodb.AttributeValue{
+				"test_id": key,
+				"test_value": FormatInt(v),
+			},
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+		resp, err := client.GetItem(&dynamodb.GetItemInput{
+			TableName: table,
+			Key: map[string]*dynamodb.AttributeValue{
+				"test_id": key,
+			},
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+		i, err := ParseInt(resp.Item["test_value"])
+		if err != nil {
+			t.Fatal(err)
+		}
+		if i != v {
+			t.Errorf("got %d, want %d", i, v)
 		}
 	}
 }

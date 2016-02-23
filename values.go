@@ -21,6 +21,20 @@ func ParseString(v *dynamodb.AttributeValue) string {
 	return *v.S
 }
 
+//FormatInt converts an int to an *AttributeValue.
+func FormatInt(i int) *dynamodb.AttributeValue {
+	return &dynamodb.AttributeValue{N: aws.String(strconv.FormatInt(int64(i), 10))}
+}
+
+//ParseInt converts an *AttributeValue to an int.
+func ParseInt(v *dynamodb.AttributeValue) (int, error) {
+	i, err := strconv.ParseInt(*v.N, 10, 0)
+	if err != nil {
+		return 0, err
+	}
+	return int(i), nil
+}
+
 //FormatTime converts a time to an *AttributeValue. The time is stored as an
 //integer representing nanoseconds since epoch, and is not necessarily
 //compatible with other serializations.
