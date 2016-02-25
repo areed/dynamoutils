@@ -39,7 +39,11 @@ func ParseInt(v *dynamodb.AttributeValue) (int, error) {
 //integer representing nanoseconds since epoch, and is not necessarily
 //compatible with other serializations.
 func FormatTime(t time.Time) *dynamodb.AttributeValue {
-	return &dynamodb.AttributeValue{N: aws.String(strconv.FormatInt(t.UnixNano(), 10))}
+	var n int64
+	if !t.IsZero() {
+		n = t.UnixNano()
+	}
+	return &dynamodb.AttributeValue{N: aws.String(strconv.FormatInt(n, 10))}
 }
 
 //ParseTime converts an AttributeValue to a time, assuming it is stored in the
@@ -48,6 +52,9 @@ func ParseTime(v *dynamodb.AttributeValue) (time.Time, error) {
 	nanoseconds, err := strconv.ParseInt(*v.N, 10, 64)
 	if err != nil {
 		return time.Time{}, errors.New("N: " + *v.N)
+	}
+	if nanoseconds == 0 {
+		return time.Time{}, nil
 	}
 	return time.Unix(0, nanoseconds), nil
 }
